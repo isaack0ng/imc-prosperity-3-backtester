@@ -32,6 +32,13 @@ uv pip install -e .
 cd ../prosperity4
 
 
+Workflow (unchanged)
+powershell# Activate env (do this each new terminal session)
+.venv\Scripts\Activate.ps1
+
+# Edit trader.py, then backtest:
+prosperity3bt trader.py 1
+
 Some more usage examples:
 ```sh
 # Backtest on all days from round 1

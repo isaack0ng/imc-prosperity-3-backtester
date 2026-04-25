@@ -18,6 +18,20 @@ $ prosperity3bt <path to algorithm file> 0
 
 Run `pip install -U prosperity3bt` again when you want to update the backtester to the latest version.
 
+
+Do with UV!!!
+cd prosperity4
+uv venv --python 3.12
+.venv\Scripts\Activate.ps1
+
+# 2. Clone and install the backtester (editable mode)
+cd ..
+git clone https://github.com/isaack0ng/imc-prosperity-3-backtester.git
+cd imc-prosperity-3-backtester
+uv pip install -e .
+cd ../prosperity4
+
+
 Some more usage examples:
 ```sh
 # Backtest on all days from round 1

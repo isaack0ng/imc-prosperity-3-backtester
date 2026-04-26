@@ -146,20 +146,29 @@ def write_output(output_file: Path, merged_results: BacktestResult) -> None:
 def print_overall_summary(results: list[BacktestResult]) -> None:
     print("Profit summary:")
 
-    total_profit = 0
+    product_profit = defaultdict(float)
+    product_order = []
+
     for result in results:
         last_timestamp = result.activity_logs[-1].timestamp
 
-        profit = 0
+        final_rows = []
         for row in reversed(result.activity_logs):
             if row.timestamp != last_timestamp:
                 break
+            final_rows.append(row)
 
-            profit += row.columns[-1]
+        for row in reversed(final_rows):
+            product = row.columns[2]
+            if product not in product_profit:
+                product_order.append(product)
+            product_profit[product] += row.columns[-1]
 
-        print(f"Round {result.round_num} day {result.day_num}: {profit:,.0f}")
+    total_profit = 0
+    for product in product_order:
+        profit = product_profit[product]
+        print(f"{product}: {profit:,.0f}")
         total_profit += profit
-
     print(f"Total profit: {total_profit:,.0f}")
 
 

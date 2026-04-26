@@ -375,6 +375,12 @@ def run_backtest(
         type_check_orders(orders)
         create_activity_logs(state, data, result)
         enforce_limits(state, data, orders, sandbox_row)
+
+        # Trades exposed to the next Trader.run() call should only be the trades
+        # generated at this timestamp. Without clearing here, products with no new
+        # trades keep stale own_trades/market_trades indefinitely.
+        state.own_trades = {}
+        state.market_trades = {}
         match_orders(state, data, orders, result, trade_matching_mode)
 
     return result

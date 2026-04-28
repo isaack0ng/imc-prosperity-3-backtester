@@ -156,7 +156,28 @@ def match_buy_order(
     for price in price_matches:
         volume = min(order.quantity, abs(order_depth.sell_orders[price]))
 
-        trades.append(Trade(order.symbol, price, volume, "SUBMISSION", "", state.timestamp))
+        named_volume = 0
+        for market_trade in market_trades:
+            if (
+                named_volume >= volume
+                or market_trade.sell_quantity == 0
+                or market_trade.trade.price != price
+            ):
+                continue
+
+            named_fill = min(volume - named_volume, market_trade.sell_quantity)
+            if named_fill <= 0:
+                continue
+
+            trades.append(
+                Trade(order.symbol, price, named_fill, "SUBMISSION", market_trade.trade.seller, state.timestamp)
+            )
+            market_trade.sell_quantity -= named_fill
+            named_volume += named_fill
+
+        anonymous_volume = volume - named_volume
+        if anonymous_volume > 0:
+            trades.append(Trade(order.symbol, price, anonymous_volume, "SUBMISSION", "", state.timestamp))
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) + volume
         data.profit_loss[order.symbol] -= price * volume
@@ -212,7 +233,28 @@ def match_sell_order(
     for price in price_matches:
         volume = min(abs(order.quantity), order_depth.buy_orders[price])
 
-        trades.append(Trade(order.symbol, price, volume, "", "SUBMISSION", state.timestamp))
+        named_volume = 0
+        for market_trade in market_trades:
+            if (
+                named_volume >= volume
+                or market_trade.buy_quantity == 0
+                or market_trade.trade.price != price
+            ):
+                continue
+
+            named_fill = min(volume - named_volume, market_trade.buy_quantity)
+            if named_fill <= 0:
+                continue
+
+            trades.append(
+                Trade(order.symbol, price, named_fill, market_trade.trade.buyer, "SUBMISSION", state.timestamp)
+            )
+            market_trade.buy_quantity -= named_fill
+            named_volume += named_fill
+
+        anonymous_volume = volume - named_volume
+        if anonymous_volume > 0:
+            trades.append(Trade(order.symbol, price, anonymous_volume, "", "SUBMISSION", state.timestamp))
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) - volume
         data.profit_loss[order.symbol] += price * volume
